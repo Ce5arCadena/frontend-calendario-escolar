@@ -8,7 +8,7 @@ export default function AuthLayout({ children }: Readonly<{ children: ReactNode 
             <div className="w-full absolute z-50">
                 <SnowAnimation/>
             </div>
-            <div className="w-full sm:w-[60%] md:w-[55%] lg:w-[45%] xl:w-[35%] m-4 rounded-4xl p-8 bg-accent-light/10 shadow-lg flex flex-col items-center justify-center z-50">
+            <div className="w-full sm:w-[60%] md:w-[55%] lg:w-[45%] xl:w-[35%] rounded-4xl mx-4 sm:m-0 p-8 bg-accent-light/10 shadow-lg flex flex-col items-center justify-center z-50">
                 {children}
             </div>
         </div>

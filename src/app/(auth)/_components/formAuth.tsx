@@ -35,6 +35,7 @@ export default function FormAuth({ isRegisterForm = false }: { isRegisterForm: b
         },
         onSubmit: (values: LoginForm) => {
             console.log('*****', values);
+            router.push('/');
         },
         validationSchema: isRegisterForm ? registerSchema : loginSchema
     });
