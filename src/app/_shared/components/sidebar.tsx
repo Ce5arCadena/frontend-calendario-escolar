@@ -1,12 +1,15 @@
 'use client';
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import { CiCircleList } from "react-icons/ci";
 import { LuPanelLeftOpen } from "react-icons/lu";
 import { MdOutlineSubject } from "react-icons/md";
 import { LuPanelLeftClose } from "react-icons/lu";
+import { IoAddCircleOutline } from "react-icons/io5";
 import { FaRegCalendarCheck } from "react-icons/fa6";
+import { IoIosArrowDown, IoIosArrowUp  } from "react-icons/io";
 
 import IconDashboard from '@/app/_shared/svgs/avatar-men.svg';
 import { ItemsNavigation } from "../types/itemsNavigationTypes";
@@ -191,7 +194,11 @@ const optionsNavigations: ItemsNavigation[] = [
     {
         id: 'subjects',
         icon: <MdOutlineSubject size={23}/>,
-        label: 'Materias'
+        label: 'Materias',
+        subItems: [
+            { id: 'subjectsList', label: 'Lista', icon: <CiCircleList size={23}/> },
+            { id: 'subjectsCreate', label: 'Crear', icon: <IoAddCircleOutline size={23}/>}
+        ]
     },
     {
         id: 'calendar',
@@ -201,11 +208,16 @@ const optionsNavigations: ItemsNavigation[] = [
 ];
 
 export default function Sidebar() {
-    const [isExpand, setIsExpand] = useState(false);
+    const [isExpand, setIsExpand] = useState(true);
+    const [subItemIsExpand, setSubItemIsExpand] = useState<Record<string, boolean>>({});
+
+    useEffect(() => {
+        console.log(subItemIsExpand);
+    }, [subItemIsExpand]);
 
     return (
         <div 
-            className={`${isExpand ? 'w-56' : 'w-16'} fixed left-0 top-0 min-h-screen bg-light shadow-2xl flex flex-col gap-4 items-center`}>
+            className={`${isExpand ? 'w-56' : 'w-16'} fixed left-0 top-0 min-h-screen bg-light shadow-2xl flex flex-col gap-4 items-center z-50`}>
                 {/* Ícono de cerrar o abrir el sidebar */}
                 {
                     isExpand ? (
@@ -226,21 +238,42 @@ export default function Sidebar() {
                 </div>
 
                 {/* Items del sidebar */}
-                <div className="flex flex-col gap-3 w-full p-2">
-                    <ul className="">
-                        {
-                            optionsNavigations.map(({id, icon, label}) => (
-                                <li key={id} className={`flex ${isExpand ? 'gap-3' : 'justify-center'} mb-3 p-1.5 border border-accent-dark hover:border-primary-dark rounded-3xl transtion ease-in-out duration-300 text-accent-dark hover:text-white hover:bg-primary cursor-pointer`}>
-                                    <span>
-                                        {icon}
-                                    </span>
-                                    <button className={`${isExpand ? 'flex' : 'hidden'}`}>
-                                        {label}
-                                    </button>
-                                </li>
-                            ))
-                        }
-                    </ul>
+                <div className="flex flex-col gap-1 w-full p-2">
+                    {
+                        optionsNavigations.map(({id, icon, label, subItems}) => (
+                            <div key={id} className={`flex ${isExpand ? 'flex-col' : 'justify-center'} cursor-pointer transtion ease-in-out duration-300 text-accent-dark`}>
+                                <div className={`flex justify-between hover:bg-accent/20 rounded-md mb-2 p-1.5 transition duration-300 ease-in ${isExpand && subItemIsExpand[id] ? 'bg-accent/20' : ''}`}>
+                                    <div className="flex gap-2">
+                                        <span>
+                                            {icon}
+                                        </span>
+                                        <button className={`${isExpand ? 'flex' : 'hidden'}`}>
+                                            {label}
+                                        </button>
+                                    </div>
+                                    {
+                                        isExpand && subItems && subItems?.length > 0 && (
+                                            <IoIosArrowDown size={23} onClick={() => setSubItemIsExpand(prev => ({
+                                                ...prev, 
+                                                [id]: !prev[id]
+                                            }))}/>
+                                        )
+                                    }
+                                </div>
+
+                                {
+                                    isExpand && subItemIsExpand[id] && subItems?.map(({id, label, icon}) => (
+                                        <div className="flex flex-col ml-8 p-1 hover:bg-accent/20 transition duration-300 ease-in rounded-md " key={id}>
+                                            <div className="flex gap-2">
+                                                { icon }
+                                                <span className="text-accent-dark">{label}</span>
+                                            </div>
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                        ))
+                    }
                 </div>
         </div>
     );
