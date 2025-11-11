@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 
+import Link from "next/link";
 import { CgProfile } from "react-icons/cg";
 import { CiCircleList } from "react-icons/ci";
 import { LuPanelLeftOpen } from "react-icons/lu";
@@ -14,6 +15,7 @@ import { IoIosArrowDown, IoIosArrowUp  } from "react-icons/io";
 
 import IconDashboard from '@/app/_shared/svgs/avatar-men.svg';
 import { ItemsNavigation } from "../types/itemsNavigationTypes";
+import { usePathname } from "next/navigation";
 
 // Se deja este código por base de otro estilo de sidebar
 // const Sidebar = () => {
@@ -196,10 +198,10 @@ const optionsNavigations: ItemsNavigation[] = [
         id: 'subjects',
         icon: <MdOutlineSubject size={23}/>,
         label: 'Materias',
-        subItems: [
-            { id: 'subjectsList', label: 'Lista', icon: <CiCircleList size={23}/> },
-            { id: 'subjectsCreate', label: 'Crear', icon: <IoAddCircleOutline size={23}/>}
-        ]
+        // subItems: [
+        //     { id: 'subjectsList', label: 'Lista', icon: <CiCircleList size={23}/> },
+        //     { id: 'subjectsCreate', label: 'Crear', icon: <IoAddCircleOutline size={23}/>}
+        // ]
     },
     {
         id: 'calendar',
@@ -209,6 +211,7 @@ const optionsNavigations: ItemsNavigation[] = [
 ];
 
 export default function Sidebar() {
+    const pathname = usePathname();
     const [isExpand, setIsExpand] = useState(true);
     const [subItemIsExpand, setSubItemIsExpand] = useState<Record<string, boolean>>({});
 
@@ -226,7 +229,7 @@ export default function Sidebar() {
     };
 
     return (
-        <div className={`${isExpand ? 'w-56' : 'w-16'} fixed left-0 top-0 min-h-screen bg-light shadow-2xl flex flex-col gap-4 items-center z-50`}>
+        <div className={`${isExpand ? 'w-56' : 'w-16'} relative left-0 top-0 min-h-screen bg-light shadow-2xl flex flex-col gap-4 items-center z-50`}>
             {/* Ícono de cerrar o abrir el sidebar */}
             {
                 isExpand ? (
@@ -253,17 +256,25 @@ export default function Sidebar() {
                         optionsNavigations.map(({id, icon, label, subItems}) => (
                             <div key={id} className={`flex ${isExpand ? 'flex-col' : 'justify-center'} cursor-pointer transtion ease-in-out duration-300 text-accent-dark`}>
                                 <div 
-                                    className={`flex justify-between hover:bg-accent/20 rounded-md mb-2 p-1.5 transition duration-300 ease-in ${isExpand && subItemIsExpand[id] ? 'bg-accent/20' : ''}`}
+                                    className={`flex justify-between hover:bg-accent/20 rounded-md mb-2 p-1.5 transition duration-300 ease-in ${pathname && pathname.slice(1) === id ? 'bg-accent/20' : ''}`}
                                     onClick={() => toggleSubMenu(id)}
                                 >
-                                    <div className="flex gap-2">
+                                    {/* <div className="flex gap-2">
                                         <span onClick={() => handleOpenSidebar(id)}>
                                             {icon}
                                         </span>
                                         <button className={`${isExpand ? 'flex' : 'hidden'} cursor-pointer`}>
                                             {label}
                                         </button>
-                                    </div>
+                                    </div> */}
+                                    <Link href={`/${id}`} className="flex gap-2">
+                                        <span onClick={() => handleOpenSidebar(id)}>
+                                            {icon}
+                                        </span>
+                                        <button className={`${isExpand ? 'flex' : 'hidden'} cursor-pointer`}>
+                                            {label}
+                                        </button>
+                                    </Link>
                                     {
                                         isExpand && subItems && subItems.length > 0 && (
                                             <>
