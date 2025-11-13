@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from "react";
+
 import { CgSearch } from "react-icons/cg";
+
+import { CardSubject } from "./_components/cardSubject";
+import { CreateSubject } from "./_components/createSubject";
+import { CardViewSubject } from "./_components/cardViewSubject";
 import { DaysOfWeeek } from "@/app/_shared/types/subjectsTypes";
 import { Subject } from "@/app/_shared/interfaces/subjectInterfaces";
-import { CardSubject } from "./_components/cardSubject";
-import { useAtomValue } from "jotai";
-import { subjectAtom } from "./_store/subjectStore";
-import { CardViewSubject } from "./_components/cardViewSubject";
 
 const daysOfWeek: DaysOfWeeek = [
     {
@@ -275,6 +276,7 @@ const subjectsData: Subject[] = [
 
 export default function Subjects() {
     const [searchQuery, setSearchQuery] = useState("");
+    const [showModalCreate, setShowModalCreate] = useState(false);
     const [showModalViewSubject, setShowModalViewSubject] = useState(false);
 
     return(
@@ -328,7 +330,13 @@ export default function Subjects() {
 
                 {/* Acción de crear una materia */}
                 <div className="w-[10%]">
-                    <button type='button' className='border w-full border-accent rounded-lg px-3 py-2 hover:text-accent-dark cursor-pointer bg-accent hover:bg-light text-light transition ease-in duration-300'>Cear materia</button>
+                    <button 
+                        type='button' 
+                        className='border w-full border-accent rounded-lg px-3 py-2 hover:text-accent-dark cursor-pointer bg-accent hover:bg-light text-light transition ease-in duration-300'
+                        onClick={() => setShowModalCreate(true)}
+                    >
+                        Cear materia
+                    </button>
                 </div>
             </div>
 
@@ -344,6 +352,12 @@ export default function Subjects() {
             {
                 showModalViewSubject && (
                     <CardViewSubject setShowModalViewSubject={setShowModalViewSubject}/>
+                )
+            }
+
+            {
+                showModalCreate && (
+                    <CreateSubject setShowModalCreate={setShowModalCreate}/>
                 )
             }
 

@@ -9,9 +9,9 @@ type WeekDay = {
 }
 
 export interface Subject {
-    id: string;
+    id?: string;
     name: string;
-    color: colorHex;
+    color?: string;
     weekDays: WeekDay[];
     nameTeacher?: string;
     materials?: string[];
