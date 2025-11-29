@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { CgSearch } from "react-icons/cg";
 
 import { CardSubject } from "./_components/cardSubject";
+import { fetchApi } from "@/app/_shared/utils/fetchApi";
 import { CreateSubject } from "./_components/createSubject";
 import { CardViewSubject } from "./_components/cardViewSubject";
 import { DaysOfWeeek } from "@/app/_shared/types/subjectsTypes";
@@ -278,6 +279,19 @@ export default function Subjects() {
     const [searchQuery, setSearchQuery] = useState("");
     const [showModalCreate, setShowModalCreate] = useState(false);
     const [showModalViewSubject, setShowModalViewSubject] = useState(false);
+
+    const getSubjects = async() => {
+        try {
+            const responseAuth = await fetchApi(`${process.env.NEXT_PUBLIC_API_URL}/subjects`);
+            console.log('-----', responseAuth);
+        } catch (error) {
+            console.log('***', error);
+        }
+    };
+
+    useEffect(() => {
+        getSubjects();
+    }, []);
 
     return(
         <div className="max-h-full flex flex-col w-full">

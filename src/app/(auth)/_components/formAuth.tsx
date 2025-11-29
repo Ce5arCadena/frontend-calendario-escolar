@@ -7,7 +7,10 @@ import { useFormik } from 'formik';
 import { FaRegUser } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { MdOutlineEmail } from 'react-icons/md';
+import toast, { Toaster } from 'react-hot-toast';
 import { RiLockPasswordLine } from 'react-icons/ri';
+import { removeToken, saveToken } from '../lib/auth';
+import { fetchApi } from '@/app/_shared/utils/fetchApi';
 import { LoginForm } from '@/app/_shared/types/loginType';
 import AvatarLogin from '@/app/_shared/svgs/avatar-login.svg';
 import AvatarRegister from '@/app/_shared/svgs/avatar-register.svg';
@@ -19,7 +22,7 @@ const loginSchema = Yup.object().shape({
 });
 
 const registerSchema = loginSchema.concat(Yup.object().shape({
-    name: Yup.string().required('El nombre es obligatorio.').min(3, 'Mínimo 3 carácteres')
+    username: Yup.string().required('El nombre es obligatorio.').min(3, 'Mínimo 3 carácteres')
 }));
 
 export default function FormAuth({ isRegisterForm = false }: { isRegisterForm: boolean}) {
@@ -29,19 +32,46 @@ export default function FormAuth({ isRegisterForm = false }: { isRegisterForm: b
     // Formulario
     const formik = useFormik({
         initialValues: {
-            name: "",
+            username: "",
             email: "",
             password: "",
         },
-        onSubmit: (values: LoginForm) => {
-            console.log('*****', values);
-            router.push('/');
+        onSubmit: async(values: LoginForm) => {
+            const urlAction = isRegisterForm ? 'users' : `auth/login`;
+            if (!isRegisterForm) {
+                delete values.username;
+            }
+            
+            const responseAuth = await fetchApi(`${process.env.NEXT_PUBLIC_API_URL}/${urlAction}`, 'POST', values);
+            toast(responseAuth.message,
+                {
+                    icon: responseAuth.icon === 'success' ? '✅' : '❌',
+                    style: {
+                        borderRadius: '10px',
+                        background: '#279AF1',
+                        color: '#fff',
+                    },
+                    duration: 3000
+                }
+            );
+
+            if (responseAuth.ok && responseAuth.token) {
+                saveToken(responseAuth.token);
+                router.push('/');
+            } else {
+                removeToken();
+                router.push('/login');
+            }
         },
         validationSchema: isRegisterForm ? registerSchema : loginSchema
     });
 
     return(
         <>
+            <Toaster
+                position='top-center'
+                reverseOrder={false}
+            />
             <div className='flex flex-col items-center'>
                 <Image 
                     src={isRegisterForm ? AvatarRegister : AvatarLogin}
@@ -63,17 +93,17 @@ export default function FormAuth({ isRegisterForm = false }: { isRegisterForm: b
                                         </div>
                                         <input 
                                             type="text" 
-                                            name='name' 
+                                            name='username' 
                                             className="w-full -ml-10 pl-10 pr-3 py-2 rounded-lg border border-gray-400 outline-none focus:border-accent-dark transition ease-in duration-300" placeholder="carls@example.com"
                                             onChange={formik.handleChange}
                                             onBlur={formik.handleBlur}
-                                            value={formik.values.name}
+                                            value={formik.values.username}
                                         />
                                     </div>
                                     {
-                                        formik.touched?.name && formik.errors?.name && (
+                                        formik.touched?.username && formik.errors?.username && (
                                             <span className="mt-2 text-xs font-semibold text-primary-dark">
-                                                {formik.errors.name}
+                                                {formik.errors.username}
                                             </span>
                                         )
                                     }
