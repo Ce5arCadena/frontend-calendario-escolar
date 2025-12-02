@@ -15,13 +15,7 @@ export const CardSubject = (
 
     return(
         <div 
-            className='rounded-l-2xl relative text-dark rounded-r-sm p-2 shadow-lg min-h-28 transition-all ease-in-out duration-300 cursor-pointer flex flex-col gap-2'
-            style={
-                {
-                    backgroundColor: `rgba(${subject?.color ?? '108, 117, 125'}, 0.4)`,
-                    borderLeft: `.3rem solid rgba(${subject?.color ?? '108, 117, 125'}, 1)`
-                }
-            }
+            className='rounded-l-2xl relative text-dark rounded-r-sm p-2 shadow-lg min-h-28 transition-all ease-in-out duration-300 cursor-pointer flex flex-col gap-2 border-l-4 border-l-accent-dark bg-accent/30'
         >
             <div className="flex gap-2 w-full">
                 <MdOutlineSubject size={23} className="text-accent-dark"/>

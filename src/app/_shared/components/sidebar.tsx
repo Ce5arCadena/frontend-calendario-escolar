@@ -11,9 +11,9 @@ import { LuPanelLeftClose } from "react-icons/lu";
 import { FaRegCalendarCheck } from "react-icons/fa6";
 import { IoIosArrowDown, IoIosArrowUp  } from "react-icons/io";
 
+import { usePathname } from "next/navigation";
 import IconDashboard from '@/app/_shared/svgs/avatar-men.svg';
 import { ItemsNavigation } from "../types/itemsNavigationTypes";
-import { usePathname } from "next/navigation";
 
 const optionsNavigations: ItemsNavigation[] = [
     {

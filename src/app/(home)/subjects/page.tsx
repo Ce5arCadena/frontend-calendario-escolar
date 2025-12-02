@@ -4,12 +4,15 @@ import { useEffect, useState } from "react";
 
 import { CgSearch } from "react-icons/cg";
 
+import { useSetAtom } from "jotai";
+import toast, { Toaster } from "react-hot-toast";
+import { subjectsAtom } from "./_store/subjectStore";
 import { CardSubject } from "./_components/cardSubject";
 import { fetchApi } from "@/app/_shared/utils/fetchApi";
 import { CreateSubject } from "./_components/createSubject";
 import { CardViewSubject } from "./_components/cardViewSubject";
 import { DaysOfWeeek } from "@/app/_shared/types/subjectsTypes";
-import { Subject } from "@/app/_shared/interfaces/subjectInterfaces";
+import { Data, Subject } from "@/app/_shared/interfaces/subjectInterfaces";
 
 const daysOfWeek: DaysOfWeeek = [
     {
@@ -276,16 +279,34 @@ const subjectsData: Subject[] = [
 ];
 
 export default function Subjects() {
+    const [subjects, setSubjects] = useState<Subject[]>([]);
+    const setSubjectsAtom = useSetAtom(subjectsAtom);
     const [searchQuery, setSearchQuery] = useState("");
+    // const subjectsAtomValue = useAtomValue(subjectAtom);
     const [showModalCreate, setShowModalCreate] = useState(false);
     const [showModalViewSubject, setShowModalViewSubject] = useState(false);
 
     const getSubjects = async() => {
         try {
-            const responseAuth = await fetchApi(`${process.env.NEXT_PUBLIC_API_URL}/subjects`);
+            const responseAuth = await fetchApi<Data>(`${process.env.NEXT_PUBLIC_API_URL}/subjects`);
             console.log('-----', responseAuth);
+            if (responseAuth.ok && responseAuth.data) {
+                setSubjectsAtom(responseAuth.data.subjects);
+                setSubjects(responseAuth.data.subjects);
+            }
         } catch (error) {
             console.log('***', error);
+            toast('Ocurrió un error al ejecutar la petición',
+                {
+                    icon: '❌',
+                    style: {
+                        borderRadius: '10px',
+                        background: '#279AF1',
+                        color: '#fff',
+                    },
+                    duration: 3000
+                }
+            );
         }
     };
 
@@ -295,6 +316,10 @@ export default function Subjects() {
 
     return(
         <div className="max-h-full flex flex-col w-full">
+            <Toaster
+                position='top-center'
+                reverseOrder={false}
+            />
             <div className="w-full flex gap-2 justify-between h-[7%]">
                 {/* Búsqueda */}
                 <div className="flex w-[80%] gap-2">
@@ -357,9 +382,11 @@ export default function Subjects() {
             {/* Lista de cards, que van a ser en grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-h-[80vh] gap-4 mt-3 mb-4 overflow-y-auto pt-1">
                 {
-                    subjectsData.map(item => (
-                        <CardSubject key={item.id} subject={item} setShowModalViewSubject={setShowModalViewSubject}/>
-                    ))
+                    subjects && subjects.length > 0 && (
+                        subjects.map(item => (
+                            <CardSubject key={item.id} subject={item} setShowModalViewSubject={setShowModalViewSubject}/>
+                        ))
+                    )
                 }
             </div>
 

@@ -1,4 +1,4 @@
-import { getToken } from "@/app/(auth)/lib/auth";
+import { getToken, removeToken } from "@/app/(auth)/lib/auth";
 
 type Headers = {
     "Content-Type": string;
@@ -11,17 +11,21 @@ interface Options {
     headers: Headers
 }
 
-interface Response {
+interface Response<T = any> {
     message: string;
     icon: string;
-    data: [] | Object;
-    erors?: [] | Object;
+    data?: T;
+    erors?: Record<string, any> | any[];
     ok: boolean;
     token?: string;
     status?: number;
 }
 
-export const fetchApi = async (URL: string, method: string = 'GET', payload: Object = {}): Promise<Response> => {
+export const fetchApi = async <T = any>(
+    URL: string, 
+    method: string = 'GET', 
+    payload: Object = {}
+): Promise<Response<T>> => {
     try {
         const token = getToken();
         const options: Options = {
@@ -41,11 +45,12 @@ export const fetchApi = async (URL: string, method: string = 'GET', payload: Obj
 
         return json;
     } catch (error) {
-        console.log(error)
+        console.log(error);
+        removeToken();
         return {
             message: 'Ocurrió un error al realizar la petición',
             icon: 'error',
-            data: {},
+            erors: [],
             ok: false
         };
     };

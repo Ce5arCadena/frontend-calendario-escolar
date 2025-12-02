@@ -56,9 +56,11 @@ export default function FormAuth({ isRegisterForm = false }: { isRegisterForm: b
             );
 
             if (responseAuth.ok && responseAuth.token) {
+                localStorage.setItem('username', responseAuth.data?.username ?? 'Usuario');
                 saveToken(responseAuth.token);
                 router.push('/');
             } else {
+                localStorage.removeItem('username');
                 removeToken();
                 router.push('/login');
             }
