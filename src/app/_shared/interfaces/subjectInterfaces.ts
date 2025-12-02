@@ -42,7 +42,16 @@ export interface User {
 }
 
 export interface WeekDay {
-    day:       string;
-    endTime:   string;
-    startTime: string;
+    day:        string;
+    endTime:    string;
+    startTime:  string;
+    classroom?: string;
+}
+
+// Formulario de crear 
+export interface FormValues {
+  name: string;
+  weekDays: WeekDay[];
+  nameTeacher?: string;
+  materials?: string[];
 }

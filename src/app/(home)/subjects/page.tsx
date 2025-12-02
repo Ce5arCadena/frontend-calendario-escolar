@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { CgSearch } from "react-icons/cg";
 
-import { useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import toast, { Toaster } from "react-hot-toast";
 import { subjectsAtom } from "./_store/subjectStore";
 import { CardSubject } from "./_components/cardSubject";
@@ -45,244 +45,10 @@ const daysOfWeek: DaysOfWeeek = [
     }
 ];
 
-const subjectsData: Subject[] = [
-    {
-        id: "SUB-D101-2025",
-        name: "Estructuras de Datos Avanzadas",
-        // #007bff (Azul)
-        color: "0,123,255", 
-        weekDays: [
-        {
-            day: "Lunes",
-            startTime: "08:30",
-            endTime: "10:00",
-            classroom: "Lab. 203"
-        },
-        {
-            day: "Jueves",
-            startTime: "10:30",
-            endTime: "12:00",
-            classroom: "Aula Magna B"
-        }
-        ],
-        nameTeacher: "Dr. Elena Castillo",
-        materials: [
-        "Libro: Algoritmos en Java",
-        "Acceso a plataforma IDE"
-        ],
-        createdAt: new Date("2025-08-01T08:00:00.000Z"),
-        updatedAt: new Date("2025-08-25T15:10:00.000Z")
-    },
-    {
-        id: "SUB-UX205-2025",
-        name: "Diseño de Experiencia de Usuario (UX)",
-        // #28a745 (Verde)
-        color: "40,167,69", 
-        weekDays: [
-        {
-            day: "Martes",
-            startTime: "14:00",
-            endTime: "16:30",
-            classroom: "Taller Creativo C"
-        }
-        ],
-        nameTeacher: "Lic. Martín Suárez",
-        materials: [
-        "Cuenta Figma",
-        "Guía de Accesibilidad"
-        ],
-        createdAt: new Date("2025-08-01T08:00:00.000Z"),
-        updatedAt: new Date("2025-08-01T08:00:00.000Z")
-    },
-    {
-        id: "SUB-H401-2025",
-        name: "Historia del Arte Moderno",
-        // #dc3545 (Rojo)
-        color: "220,53,69", 
-        weekDays: [
-        {
-            day: "Miercoles",
-            startTime: "18:00",
-            endTime: "20:00",
-            classroom: "Auditorio Principal"
-        }
-        ],
-        nameTeacher: "Prof. Ana López",
-        materials: [
-        "Diapositivas de la clase"
-        ],
-        createdAt: new Date("2025-08-01T08:00:00.000Z")
-    },
-    {
-        id: "SUB-F105-2025",
-        name: "Fundamentos de Finanzas",
-        // #ffc107 (Amarillo/Dorado)
-        color: "255,193,7", 
-        weekDays: [
-        {
-            day: "Miercoles",
-            startTime: "10:00",
-            endTime: "11:30",
-            classroom: "B-305"
-        },
-        {
-            day: "Viernes",
-            startTime: "10:00",
-            endTime: "11:30",
-            classroom: "B-305"
-        }
-        ],
-        nameTeacher: "Msc. Ricardo Vélez",
-        materials: [
-        "Calculadora financiera"
-        ],
-        createdAt: new Date("2025-08-01T08:00:00.000Z"),
-        updatedAt: new Date("2025-09-01T12:00:00.000Z")
-    },
-    {
-        id: "SUB-S301-2025",
-        name: "Seminario de Tesis",
-        // #6f42c1 (Púrpura)
-        color: "111,66,193", 
-        weekDays: [
-        {
-            day: "Sabado",
-            startTime: "09:00",
-            endTime: "12:00"
-        }
-        ],
-        nameTeacher: "Dra. Carolina Ríos",
-        materials: [
-        "Manual APA"
-        ],
-        createdAt: new Date("2025-08-01T08:00:00.000Z"),
-        updatedAt: new Date("2025-08-15T09:00:00.000Z")
-    },
-    {
-        id: "SUB-P202-2025",
-        name: "Programación Orientada a Objetos",
-        // #17a2b8 (Turquesa)
-        color: "23,162,184", 
-        weekDays: [
-        {
-            day: "Lunes",
-            startTime: "10:30",
-            endTime: "12:30",
-            classroom: "Lab. 101"
-        },
-        {
-            day: "Miercoles",
-            startTime: "08:00",
-            endTime: "10:00",
-            classroom: "Lab. 101"
-        }
-        ],
-        nameTeacher: "Ing. Julián Castro",
-        materials: [
-        "Libro de C++",
-        "Software Visual Studio"
-        ],
-        createdAt: new Date("2025-08-01T08:00:00.000Z"),
-        updatedAt: new Date("2025-09-05T18:30:00.000Z")
-    },
-    {
-        id: "SUB-I303-2025",
-        name: "Ingeniería de Requisitos",
-        // #fd7e14 (Naranja)
-        color: "253,126,20", 
-        weekDays: [
-        {
-            day: "Martes",
-            startTime: "08:00",
-            endTime: "09:30",
-            classroom: "Virtual Meeting"
-        },
-        {
-            day: "Viernes",
-            startTime: "08:00",
-            endTime: "09:30",
-            classroom: "Virtual Meeting"
-        }
-        ],
-        nameTeacher: "Dra. Laura Múnera",
-        materials: [
-        "Plantillas UML",
-        "Artículos de investigación"
-        ],
-        createdAt: new Date("2025-08-01T08:00:00.000Z")
-    },
-    {
-        id: "SUB-M101-2025",
-        name: "Cálculo Diferencial",
-        // #6c757d (Gris)
-        color: "108,117,125", 
-        weekDays: [
-        {
-            day: "Lunes",
-            startTime: "14:00",
-            endTime: "16:00",
-            classroom: "Aula A-5"
-        },
-        {
-            day: "Miercoles",
-            startTime: "14:00",
-            endTime: "16:00",
-            classroom: "Aula A-5"
-        }
-        ],
-        nameTeacher: "Prof. David Morales",
-        materials: [
-        "Libro de Cálculo de Stewart"
-        ],
-        createdAt: new Date("2025-08-01T08:00:00.000Z"),
-        updatedAt: new Date("2025-08-01T08:00:00.000Z")
-    },
-    {
-        id: "SUB-T404-2025",
-        name: "Teoría de la Computación",
-        // #e83e8c (Rosado)
-        color: "232,62,140", 
-        weekDays: [
-        {
-            day: "Jueves",
-            startTime: "17:00",
-            endTime: "19:00",
-            classroom: "B-101"
-        }
-        ],
-        nameTeacher: "Ph.D. Sofía Rincón",
-        materials: [
-        "Notas de clase"
-        ],
-        createdAt: new Date("2025-08-01T08:00:00.000Z"),
-        updatedAt: new Date("2025-08-20T11:00:00.000Z")
-    },
-    {
-        id: "SUB-L100-2025",
-        name: "Cátedra Universitaria",
-        // #343a40 (Gris oscuro)
-        color: "52,58,64", 
-        weekDays: [
-        {
-            day: "Domingo",
-            startTime: "10:00",
-            endTime: "11:00",
-            classroom: "Sala de Reuniones"
-        }
-        ],
-        nameTeacher: "Msc. Juan Pérez",
-        materials: [
-        "Reglamento estudiantil"
-        ],
-        createdAt: new Date("2025-08-01T08:00:00.000Z")
-    }
-];
-
 export default function Subjects() {
-    const [subjects, setSubjects] = useState<Subject[]>([]);
     const setSubjectsAtom = useSetAtom(subjectsAtom);
     const [searchQuery, setSearchQuery] = useState("");
-    // const subjectsAtomValue = useAtomValue(subjectAtom);
+    const subjectsAtomValue = useAtomValue(subjectsAtom);
     const [showModalCreate, setShowModalCreate] = useState(false);
     const [showModalViewSubject, setShowModalViewSubject] = useState(false);
 
@@ -292,7 +58,6 @@ export default function Subjects() {
             console.log('-----', responseAuth);
             if (responseAuth.ok && responseAuth.data) {
                 setSubjectsAtom(responseAuth.data.subjects);
-                setSubjects(responseAuth.data.subjects);
             }
         } catch (error) {
             console.log('***', error);
@@ -380,10 +145,10 @@ export default function Subjects() {
             </div>
 
             {/* Lista de cards, que van a ser en grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-h-[80vh] gap-4 mt-3 mb-4 overflow-y-auto pt-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 max-h-[80vh] gap-4 mt-3 mb-4 overflow-y-auto pt-1">
                 {
-                    subjects && subjects.length > 0 && (
-                        subjects.map(item => (
+                    subjectsAtomValue && subjectsAtomValue.length > 0 && (
+                        subjectsAtomValue.map(item => (
                             <CardSubject key={item.id} subject={item} setShowModalViewSubject={setShowModalViewSubject}/>
                         ))
                     )

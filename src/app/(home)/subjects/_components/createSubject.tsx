@@ -7,8 +7,13 @@ import { IoAddCircleSharp } from 'react-icons/io5';
 import { SiGoogleclassroom } from 'react-icons/si';
 import { LiaChalkboardTeacherSolid } from 'react-icons/lia';
 
-import { Field, FieldArray, Form, Formik } from 'formik';
+import { useSetAtom } from 'jotai';
+import toast, { Toaster } from 'react-hot-toast';
+import { subjectsAtom } from '../_store/subjectStore';
 import { IoMdCloseCircleOutline } from 'react-icons/io';
+import { fetchApi } from '@/app/_shared/utils/fetchApi';
+import { Field, FieldArray, Form, Formik, FormikHelpers } from 'formik';
+import { FormValues, Subject } from '@/app/_shared/interfaces/subjectInterfaces';
 
 const createSchemaValidation = Yup.object().shape({
     name: Yup.string().required('El nombre es requerido'),
@@ -27,6 +32,7 @@ const createSchemaValidation = Yup.object().shape({
 const dayOptions = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'];
 
 export const CreateSubject = ({ setShowModalCreate }: { setShowModalCreate: (value: boolean) => void }) => {
+    const setSubjectsAtom = useSetAtom(subjectsAtom);
     const initialValues = {
         name: "",
         weekDays: [
@@ -41,8 +47,40 @@ export const CreateSubject = ({ setShowModalCreate }: { setShowModalCreate: (val
         materials: []
     };
 
-    const handleSubmit = (values) => {
-        console.log(values);
+    const handleSubmit = async(values: FormValues, actions: FormikHelpers<FormValues>) => {
+        try {
+            const responseAuth = await fetchApi<Subject>(`${process.env.NEXT_PUBLIC_API_URL}/subjects`, 'POST', values);
+            toast(responseAuth.message,
+                {
+                    icon: responseAuth.ok ? '✅' : '❌',
+                    style: {
+                        borderRadius: '10px',
+                        background: '#279AF1',
+                        color: '#fff',
+                    },
+                    duration: 3000
+                }
+            );
+            if (responseAuth.ok && responseAuth.data) {
+                actions.resetForm();
+                setSubjectsAtom((prevSubjects) => [
+                    responseAuth.data as Subject,
+                    ...(prevSubjects ?? []),
+                ]);
+            }
+        } catch (error) {
+            toast('Ocurrió un error al ejecutar la petición',
+                {
+                    icon: '❌',
+                    style: {
+                        borderRadius: '10px',
+                        background: '#279AF1',
+                        color: '#fff',
+                    },
+                    duration: 3000
+                }
+            );
+        }
     };
 
     return(
@@ -50,7 +88,11 @@ export const CreateSubject = ({ setShowModalCreate }: { setShowModalCreate: (val
             <div 
                 className='rounded-2xl overflow-y-auto max-h-[70vh] relative p-3 shadow-lg min-h-28 transition-all w-[55%] ease-in-out duration-300 flex flex-col gap-2 bg-light text-gray-600'
             >
-                <Formik 
+                <Toaster
+                    position='top-center'
+                    reverseOrder={false}
+                />
+                <Formik
                     initialValues={initialValues}
                     onSubmit={handleSubmit}
                     validationSchema={createSchemaValidation}
