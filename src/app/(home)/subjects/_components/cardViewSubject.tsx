@@ -16,7 +16,7 @@ export const CardViewSubject = ({ setShowModalViewSubject }: { setShowModalViewS
     return(
         <div className="absolute top-0 left-0 bg-accent/40 rounded-md w-full z-50 h-full flex justify-center items-center">
             <div 
-                className='rounded-l-2xl relative rounded-r-sm px-3 py-2 shadow-lg min-h-28 transition-all ease-in-out duration-300 flex flex-col gap-2 border-l-4 border-l-accent-dark bg-accent/50'
+                className='rounded-l-2xl relative rounded-r-sm px-3 py-2 shadow-lg min-h-28 transition-all ease-in-out duration-300 flex flex-col gap-2 border-l-4 border-l-accent-dark bg-accent/80'
             >
                 <IoMdCloseCircleOutline 
                     className="-top-2 -right-2 text-accent-dark cursor-pointer rounded-md bg-gray-100 absolute" 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import { CgSearch } from "react-icons/cg";
 
@@ -13,6 +13,7 @@ import { CreateSubject } from "./_components/createSubject";
 import { CardViewSubject } from "./_components/cardViewSubject";
 import { DaysOfWeeek } from "@/app/_shared/types/subjectsTypes";
 import { Data, Subject } from "@/app/_shared/interfaces/subjectInterfaces";
+import ReactPaginate from "react-paginate";
 
 const daysOfWeek: DaysOfWeeek = [
     {
@@ -45,16 +46,22 @@ const daysOfWeek: DaysOfWeeek = [
     }
 ];
 
+const ITEMSPERPAGE = 16;
+
 export default function Subjects() {
+    const timeRef = useRef<ReturnType<typeof setTimeout>>(null);
     const setSubjectsAtom = useSetAtom(subjectsAtom);
-    const [searchQuery, setSearchQuery] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
     const subjectsAtomValue = useAtomValue(subjectsAtom);
     const [showModalCreate, setShowModalCreate] = useState(false);
     const [showModalViewSubject, setShowModalViewSubject] = useState(false);
 
-    const getSubjects = async() => {
+    const getSubjects = async(search = '') => {
         try {
-            const responseAuth = await fetchApi<Data>(`${process.env.NEXT_PUBLIC_API_URL}/subjects`);
+            let URL = `${process.env.NEXT_PUBLIC_API_URL}/subjects`;
+            if (search !== '') URL += `?search=${search}`;
+
+            const responseAuth = await fetchApi<Data>(URL);
             console.log('-----', responseAuth);
             if (responseAuth.ok && responseAuth.data) {
                 setSubjectsAtom(responseAuth.data.subjects);
@@ -74,6 +81,35 @@ export default function Subjects() {
             );
         }
     };
+
+    const subjectsToShow = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMSPERPAGE;
+        const endIndex = startIndex + ITEMSPERPAGE;
+        
+        return subjectsAtomValue?.slice(startIndex, endIndex); 
+    }, [subjectsAtomValue, currentPage]);
+
+    const handlePageClick = ({selected}: {selected: number}) => {
+        setCurrentPage(selected + 1);
+    };
+
+    const handleChangeSearch = (e: ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.value) {
+            getSubjects();
+            return;
+        };
+
+        console.log('primer ite', timeRef.current)
+        if (timeRef.current) {
+            console.log(timeRef.current)
+            clearTimeout(timeRef.current)
+        };
+
+        console.log('********', timeRef.current)
+        timeRef.current = setTimeout(() => {
+            getSubjects(e.target.value);
+        }, 200);
+    }
 
     useEffect(() => {
         getSubjects();
@@ -96,11 +132,10 @@ export default function Subjects() {
                                         <CgSearch className="mdi mdi-email-outline text-gray-400 text-lg"/>
                                     </div>
                                     <input 
-                                        type="email" 
-                                        name='email' 
-                                        className="w-full -ml-10 pl-10 pr-3 py-2 rounded-lg border border-gray-400 outline-none focus:border-accent-dark transition ease-in duration-300" placeholder="Busca una materia"
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        value={searchQuery}
+                                        type="text" 
+                                        className="w-full -ml-10 pl-10 pr-3 py-2 rounded-lg border border-gray-400 outline-none focus:border-accent-dark transition ease-in duration-300" 
+                                        placeholder="Buscar por nombre"
+                                        onChange={handleChangeSearch}
                                     />
                                 </div>
                             </div>
@@ -147,12 +182,17 @@ export default function Subjects() {
             {/* Lista de cards, que van a ser en grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 max-h-[80vh] gap-4 mt-3 mb-4 overflow-y-auto pt-1">
                 {
-                    subjectsAtomValue && subjectsAtomValue.length > 0 && (
-                        subjectsAtomValue.map(item => (
+                    subjectsToShow && subjectsToShow.length > 0 && (
+                        subjectsToShow.map(item => (
                             <CardSubject key={item.id} subject={item} setShowModalViewSubject={setShowModalViewSubject}/>
                         ))
                     )
                 }
+
+                
+            </div>
+            <div className="flex">
+                
             </div>
 
             {
@@ -168,14 +208,28 @@ export default function Subjects() {
             }
 
             {/* Paginación de cards */}
-            <div className="h-[10%] flex justify-between">
-                <div className="">
-                    <p>Mostrando 4 de 20 materias</p>
-                </div>
-
-                <div className="">
-                    1,2,3,4 paginas
-                </div>
+            <div className="flex justify-between">
+                <p>Mostrando {subjectsToShow?.length} de {subjectsAtomValue?.length} materias</p>
+                <ReactPaginate 
+                    breakLabel='...'
+                    nextLabel='>'
+                    previousLabel='<'
+                    onPageChange={handlePageClick}
+                    pageRangeDisplayed={5}
+                    pageCount={Math.ceil((subjectsAtomValue?.length ?? 0) / ITEMSPERPAGE)}
+                    renderOnZeroPageCount={null}
+                    containerClassName={'inline-flex -space-x-px rounded-lg shadow-sm text-sm'} 
+                    pageClassName={'page-item cursor-pointer'} 
+                    pageLinkClassName={'block px-3 py-2 leading-tight text-gray-600 bg-white hover:bg-gray-100 border border-gray-300'}
+                    activeClassName={'bg-blue-600 text-white border-blue-600'}
+                    activeLinkClassName={'text-gray font-semibold !important'}
+                    previousClassName={'page-item cursor-pointer'}
+                    previousLinkClassName={'block px-3 py-2 leading-tight text-gray-600 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100'}
+                    nextClassName={'page-item cursor-pointer'}
+                    nextLinkClassName={'block px-3 py-2 leading-tight text-gray-600 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100'}
+                    breakClassName={'page-item'}
+                    breakLinkClassName={'block px-3 py-2 leading-tight text-gray-600 bg-white border border-gray-300'}
+                />
             </div>
         </div>
     );
