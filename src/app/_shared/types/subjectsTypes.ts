@@ -1,5 +1,5 @@
 type Days = {
-    id: number;
+    id: string;
     label: string;
 }
 

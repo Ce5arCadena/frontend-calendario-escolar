@@ -4,6 +4,7 @@ import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import { CgSearch } from "react-icons/cg";
 
+import ReactPaginate from "react-paginate";
 import { useAtomValue, useSetAtom } from "jotai";
 import toast, { Toaster } from "react-hot-toast";
 import { subjectsAtom } from "./_store/subjectStore";
@@ -13,35 +14,34 @@ import { CreateSubject } from "./_components/createSubject";
 import { CardViewSubject } from "./_components/cardViewSubject";
 import { DaysOfWeeek } from "@/app/_shared/types/subjectsTypes";
 import { Data, Subject } from "@/app/_shared/interfaces/subjectInterfaces";
-import ReactPaginate from "react-paginate";
 
 const daysOfWeek: DaysOfWeeek = [
     {
-        id: 1,
+        id: "Lunes",
         label: "Lunes"
     },
     {
-        id: 2,
+        id: "Martes",
         label: "Martes"
     },
     {
-        id: 3,
+        id: "Miercoles",
         label: "Miércoles"
     },
     {
-        id: 4,
+        id: "Jueves",
         label: "Jueves"
     },
     {
-        id: 5,
+        id: "Viernes",
         label: "Viernes"
     },
     {
-        id: 6,
+        id: "Sabado",
         label: "Sábado"
     },
     {
-        id: 7,
+        id: "Domingo",
         label: "Domingo"
     }
 ];
@@ -49,10 +49,11 @@ const daysOfWeek: DaysOfWeeek = [
 const ITEMSPERPAGE = 16;
 
 export default function Subjects() {
-    const timeRef = useRef<ReturnType<typeof setTimeout>>(null);
+    const [subjects, setSubjects] = useState<Subject[]>([]);
     const setSubjectsAtom = useSetAtom(subjectsAtom);
     const [currentPage, setCurrentPage] = useState(1);
     const subjectsAtomValue = useAtomValue(subjectsAtom);
+    const timeRef = useRef<ReturnType<typeof setTimeout>>(null);
     const [showModalCreate, setShowModalCreate] = useState(false);
     const [showModalViewSubject, setShowModalViewSubject] = useState(false);
 
@@ -62,8 +63,8 @@ export default function Subjects() {
             if (search !== '') URL += `?search=${search}`;
 
             const responseAuth = await fetchApi<Data>(URL);
-            console.log('-----', responseAuth);
             if (responseAuth.ok && responseAuth.data) {
+                setSubjects(responseAuth.data.subjects);
                 setSubjectsAtom(responseAuth.data.subjects);
             }
         } catch (error) {
@@ -109,7 +110,18 @@ export default function Subjects() {
         timeRef.current = setTimeout(() => {
             getSubjects(e.target.value);
         }, 200);
-    }
+    };
+
+    const handleChangeDaysOfWeek = (e: ChangeEvent<HTMLSelectElement>) => {
+        console.log(e.target.value)
+        if (!e.target.value) {
+            console.log(subjects)
+            setSubjectsAtom(subjects);
+            return;
+        };
+        const filterSubjects = [...subjects].filter((subject) => subject.weekDays.some(({day}) => day.toLowerCase() === e.target.value.toLowerCase()));
+        setSubjectsAtom(filterSubjects);
+    };
 
     useEffect(() => {
         getSubjects();
@@ -146,8 +158,12 @@ export default function Subjects() {
                     <div className="w-full md:w-[35%]">
                         <div className="flex w-full gap-3">
                             <div className='flex flex-col w-[50%]'>
-                                <select id="countries" className="border border-gray-400 text-gray-900 outline-0 text-sm rounded-lg block w-full p-2.5">
-                                    <option>Selecciona un día</option>
+                                <select 
+                                    id="countries" 
+                                    className="border border-gray-400 text-gray-900 outline-0 text-sm rounded-lg block w-full p-2.5"
+                                    onChange={handleChangeDaysOfWeek}
+                                >
+                                    <option value="">Selecciona un día</option>
                                     {
                                         daysOfWeek.map(({id, label}) => (
                                             <option key={id} value={id}>{label}</option>
@@ -203,7 +219,7 @@ export default function Subjects() {
 
             {
                 showModalCreate && (
-                    <CreateSubject setShowModalCreate={setShowModalCreate}/>
+                    <CreateSubject setShowModalCreate={setShowModalCreate} setSubjects={setSubjects}/>
                 )
             }
 

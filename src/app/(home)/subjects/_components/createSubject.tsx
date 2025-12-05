@@ -7,6 +7,7 @@ import { IoAddCircleSharp } from 'react-icons/io5';
 import { SiGoogleclassroom } from 'react-icons/si';
 import { LiaChalkboardTeacherSolid } from 'react-icons/lia';
 
+import React from 'react';
 import { useSetAtom } from 'jotai';
 import toast, { Toaster } from 'react-hot-toast';
 import { subjectsAtom } from '../_store/subjectStore';
@@ -25,13 +26,13 @@ const createSchemaValidation = Yup.object().shape({
             classroom: Yup.string()
         })
     ).min(1, 'Debe ingresar al menos 1 horario'),
-    nameTeacher: Yup.string(),
+    nameTeacher: Yup.string().required('El profesor es requerido'),
     materials: Yup.array().of(Yup.string())
 });
 
 const dayOptions = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'];
 
-export const CreateSubject = ({ setShowModalCreate }: { setShowModalCreate: (value: boolean) => void }) => {
+export const CreateSubject = ({ setShowModalCreate, setSubjects }: { setShowModalCreate: (value: boolean) => void, setSubjects: React.Dispatch<React.SetStateAction<Subject[]>> }) => {
     const setSubjectsAtom = useSetAtom(subjectsAtom);
     const initialValues = {
         name: "",
@@ -63,6 +64,10 @@ export const CreateSubject = ({ setShowModalCreate }: { setShowModalCreate: (val
             );
             if (responseAuth.ok && responseAuth.data) {
                 actions.resetForm();
+                setSubjects((prevSubjects) => [
+                    responseAuth.data as Subject,
+                    ...(prevSubjects ?? [])
+                ]);
                 setSubjectsAtom((prevSubjects) => [
                     responseAuth.data as Subject,
                     ...(prevSubjects ?? []),
@@ -163,9 +168,8 @@ export const CreateSubject = ({ setShowModalCreate }: { setShowModalCreate: (val
                                                                 </div>
                                                                 <input 
                                                                     type="text" 
-                                                                    name="nameTeacher" 
                                                                     placeholder="Carlos Trujillo" 
-                                                                    className="w-full -ml-10 pl-10 pr-3 py-2 rounded-lg border border-gray-400 outline-none focus:border-accent-dark transition ease-in duration-300"
+                                                                    className={`w-full -ml-10 pl-10 pr-3 py-2 rounded-lg border border-gray-400 outline-none ${meta.touched && meta.error ? 'border-primary-dark' : ''} focus:border-accent-dark transition ease-in duration-300`}
                                                                     {...field}
                                                                 />
                                                             </div>
