@@ -7,12 +7,11 @@ import { IoAddCircleSharp } from 'react-icons/io5';
 import { SiGoogleclassroom } from 'react-icons/si';
 import { LiaChalkboardTeacherSolid } from 'react-icons/lia';
 
-import React from 'react';
+import toast from 'react-hot-toast';
 import { useAtomValue, useSetAtom } from 'jotai';
-import toast, { Toaster } from 'react-hot-toast';
+import { subjectAtom } from '../_store/subjectStore';
 import { IoMdCloseCircleOutline } from 'react-icons/io';
 import { fetchApi } from '@/app/_shared/utils/fetchApi';
-import { subjectAtom, subjectsAtom } from '../_store/subjectStore';
 import { Field, FieldArray, Form, Formik, FormikHelpers } from 'formik';
 import { FormValues, Subject } from '@/app/_shared/interfaces/subjectInterfaces';
 
@@ -33,21 +32,21 @@ const createSchemaValidation = Yup.object().shape({
 const dayOptions = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'];
 
 export const CreateSubject = ({ 
-    setSubjects ,
+    getSubjects,
     setShowModalCreate,
     setShowModalEditSubject 
 }: { 
+    getSubjects: () => Promise<void>,
     setShowModalCreate: (value: boolean) => void, 
-    setSubjects: React.Dispatch<React.SetStateAction<Subject[]>> 
-    setShowModalEditSubject: (value: boolean) => void, 
+    setShowModalEditSubject: (value: boolean) => void
 }) => {
     const setSubjectAtom = useSetAtom(subjectAtom);
-    const setSubjectsAtom = useSetAtom(subjectsAtom);
     const subjectAtomValue = useAtomValue(subjectAtom);
+    const subjectIsDefined = subjectAtomValue && Object.keys(subjectAtomValue).length > 0;
 
     const initialValues = {
-        name: subjectAtomValue && subjectAtomValue.name ? subjectAtomValue.name : "",
-        weekDays: subjectAtomValue && subjectAtomValue.weekDays && subjectAtomValue.weekDays.length > 0 ? subjectAtomValue.weekDays : [
+        name: subjectIsDefined && subjectAtomValue.name ? subjectAtomValue.name : "",
+        weekDays: subjectIsDefined && subjectAtomValue.weekDays && subjectAtomValue.weekDays.length > 0 ? subjectAtomValue.weekDays : [
             {
                 day: "",
                 startTime: "",
@@ -55,18 +54,16 @@ export const CreateSubject = ({
                 classroom: ""
             }
         ],
-        nameTeacher: subjectAtomValue && subjectAtomValue.nameTeacher ? subjectAtomValue.nameTeacher : "",
-        materials: subjectAtomValue && subjectAtomValue.materials ? subjectAtomValue.materials : []
+        nameTeacher: subjectIsDefined && subjectAtomValue.nameTeacher ? subjectAtomValue.nameTeacher : "",
+        materials: subjectIsDefined && subjectAtomValue.materials ? subjectAtomValue.materials : []
     };
-
-    console.log(subjectAtomValue, initialValues)
 
     const handleSubmit = async(values: FormValues, actions: FormikHelpers<FormValues>) => {
         try {
-            const METHOD = subjectAtomValue ? 'PUT' : 'POST';
-            const URL = subjectAtomValue ? `${process.env.NEXT_PUBLIC_API_URL}/subjects/${subjectAtomValue.id}` : `${process.env.NEXT_PUBLIC_API_URL}/subjects`;
+            const METHOD = subjectIsDefined ? 'PUT' : 'POST';
+            const URL = subjectIsDefined ? `${process.env.NEXT_PUBLIC_API_URL}/subjects/${subjectAtomValue.id}` : `${process.env.NEXT_PUBLIC_API_URL}/subjects`;
             const responseAuth = await fetchApi<Subject>(URL, METHOD, values);
-            console.log(responseAuth)
+
             toast(responseAuth.message, 
                 {
                     icon: responseAuth.ok ? '✅' : '❌',
@@ -80,37 +77,8 @@ export const CreateSubject = ({
             
             if (responseAuth.ok && responseAuth.data) {
                 actions.resetForm();
-                if (METHOD === 'POST') {
-                    setSubjects((prevSubjects) => [
-                        responseAuth.data as Subject,
-                        ...(prevSubjects ?? [])
-                    ]);
-                    setSubjectsAtom((prevSubjects) => [
-                        responseAuth.data as Subject,
-                        ...(prevSubjects ?? []),
-                    ]);
-                } else {
-                    setSubjects((prevSubjects) => {
-                        return prevSubjects.map(item => {
-                            if (item.id === subjectAtomValue?.id) {
-                                return responseAuth.data as Subject;
-                            };
-                            return item;
-                        });
-                    });
-                    setSubjectsAtom((prevSubjects) => {
-                        if (prevSubjects) {
-                            return prevSubjects.map(item => {
-                                if (item.id === subjectAtomValue?.id) {
-                                    return responseAuth.data as Subject;
-                                };
-                                return item;
-                            });
-                        }
-                    });
-                    setSubjectAtom(responseAuth.data);
-                    // setShowModalEditSubject(false);
-                }
+                if (METHOD === 'PUT') setSubjectAtom(responseAuth.data);
+                await getSubjects();
             }
         } catch (error) {
             toast('Ocurrió un error al ejecutar la petición',
@@ -132,10 +100,6 @@ export const CreateSubject = ({
             <div 
                 className='rounded-2xl overflow-y-auto max-h-[70vh] relative p-3 shadow-lg min-h-28 transition-all w-[55%] ease-in-out duration-300 flex flex-col gap-2 bg-light text-gray-600'
             >
-                <Toaster
-                    position='top-center'
-                    reverseOrder={false}
-                />
                 <Formik
                     onSubmit={handleSubmit}
                     enableReinitialize={true}
@@ -464,7 +428,7 @@ export const CreateSubject = ({
                                     className='border border-accent rounded-lg px-3 py-2 text-light bg-accent cursor-pointer hover:bg-light hover:text-accent-dark transition ease-in duration-300'
                                 >
                                     {
-                                        subjectAtomValue ? 
+                                        subjectIsDefined ? 
                                         'Editar' : 'Registrar'
                                     }
                                 </button>

@@ -11,11 +11,13 @@ import { Subject } from "@/app/_shared/interfaces/subjectInterfaces";
 export const CardSubject = (
     { 
         subject, 
+        deleteSubject, 
         setShowModalViewSubject,
         setShowModalEditSubject 
     }: 
     { 
         subject: Subject, 
+        deleteSubject: (subject: Subject) => void,
         setShowModalViewSubject: (value: boolean) => void,
         setShowModalEditSubject: (value: boolean) => void 
     }
@@ -68,11 +70,14 @@ export const CardSubject = (
                     className="text-accent-dark cursor-pointer"
                     onClick={() => {
                         setSubjectAtom(subject);
-                        console.log(subject)
                         setShowModalEditSubject(true);
                     }}
                 />
-                <MdDelete size={21} className="text-primary-dark cursor-pointer"/>
+                <MdDelete 
+                    size={21} 
+                    className="text-primary-dark cursor-pointer"
+                    onClick={() => deleteSubject(subject)}
+                />
             </div>
         </div>
     );

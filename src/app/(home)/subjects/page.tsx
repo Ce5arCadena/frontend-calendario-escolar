@@ -84,6 +84,59 @@ export default function Subjects() {
         }
     };
 
+    const deleteSubject = async(subject: Subject) => {
+        try {
+            toast.dismissAll()
+            
+            const subjectDelete = async () => {
+                console.log('entraaa')
+                let URL = `${process.env.NEXT_PUBLIC_API_URL}/subjects/${subject.id}`;
+                const responseAuth = await fetchApi<Data>(URL, 'DELETE');
+
+                console.log(responseAuth);
+                if (responseAuth.ok && responseAuth.data) {
+                    toast.dismissAll();
+                    await getSubjects();
+                };
+            };
+
+            toast((t) => (
+                <div className="flex flex-col items-center gap-3 rounded-lg bg-white text-sm">
+                    <span>
+                        ¿Seguro que deseas eliminar <b>{subject.name}</b>?
+                    </span>
+                    <div className="flex justify-center gap-2">
+                        <button
+                            onClick={subjectDelete}
+                            className="px-3 py-1 rounded-md bg-red-500 cursor-pointer text-white hover:bg-red-600 transition-colors"
+                        >
+                            Eliminar
+                        </button>
+                        <button
+                            onClick={() => toast.dismiss(t.id)}
+                            className="px-3 py-1 rounded-md bg-gray-100 text-gray-700 cursor-pointer hover:bg-gray-200 transition-colors dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                        >
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            ), {id: String(subject.id)});
+        } catch (error) {
+            console.log('***', error);
+            toast('Ocurrió un error al ejecutar la petición',
+                {
+                    icon: '❌',
+                    style: {
+                        borderRadius: '10px',
+                        background: '#279AF1',
+                        color: '#fff',
+                    },
+                    duration: 3000
+                }
+            );
+        }
+    };
+
     const subjectsToShow = useMemo(() => {
         const startIndex = (currentPage - 1) * ITEMSPERPAGE;
         const endIndex = startIndex + ITEMSPERPAGE;
@@ -195,8 +248,9 @@ export default function Subjects() {
                         subjectsToShow.map(item => (
                             <CardSubject 
                                 key={item.id} 
-                                subject={item} setShowModalViewSubject={setShowModalViewSubject}
+                                deleteSubject={deleteSubject}
                                 setShowModalEditSubject={setShowModalEditSubject}
+                                subject={item} setShowModalViewSubject={setShowModalViewSubject}
                             />
                         ))
                     )
@@ -215,10 +269,10 @@ export default function Subjects() {
 
             {
                 (showModalCreate || showModalEditSubject) && (
-                    <CreateSubject 
-                    setSubjects={setSubjects}
-                    setShowModalCreate={setShowModalCreate} 
-                    setShowModalEditSubject={setShowModalEditSubject}
+                    <CreateSubject
+                        getSubjects={getSubjects}
+                        setShowModalCreate={setShowModalCreate} 
+                        setShowModalEditSubject={setShowModalEditSubject}
                     />
                 )
             }
