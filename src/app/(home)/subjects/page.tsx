@@ -49,13 +49,14 @@ const daysOfWeek: DaysOfWeeek = [
 const ITEMSPERPAGE = 16;
 
 export default function Subjects() {
-    const [subjects, setSubjects] = useState<Subject[]>([]);
     const setSubjectsAtom = useSetAtom(subjectsAtom);
     const [currentPage, setCurrentPage] = useState(1);
     const subjectsAtomValue = useAtomValue(subjectsAtom);
+    const [subjects, setSubjects] = useState<Subject[]>([]);
     const timeRef = useRef<ReturnType<typeof setTimeout>>(null);
     const [showModalCreate, setShowModalCreate] = useState(false);
     const [showModalViewSubject, setShowModalViewSubject] = useState(false);
+    const [showModalEditSubject, setShowModalEditSubject] = useState(false);
 
     const getSubjects = async(search = '') => {
         try {
@@ -171,14 +172,6 @@ export default function Subjects() {
                                     }
                                 </select>
                             </div>
-
-                            <div className='flex w-[30%]'>
-                                <input 
-                                    type="time" 
-                                    name='hourStart' 
-                                    className="w-full pl-5 pr-3 py-2 rounded-lg border border-gray-400 outline-none focus:border-accent-dark transition ease-in duration-300" placeholder="Busca una materia"
-                                />
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -200,26 +193,33 @@ export default function Subjects() {
                 {
                     subjectsToShow && subjectsToShow.length > 0 && (
                         subjectsToShow.map(item => (
-                            <CardSubject key={item.id} subject={item} setShowModalViewSubject={setShowModalViewSubject}/>
+                            <CardSubject 
+                                key={item.id} 
+                                subject={item} setShowModalViewSubject={setShowModalViewSubject}
+                                setShowModalEditSubject={setShowModalEditSubject}
+                            />
                         ))
                     )
                 }
 
                 
             </div>
-            <div className="flex">
-                
-            </div>
 
             {
                 showModalViewSubject && (
-                    <CardViewSubject setShowModalViewSubject={setShowModalViewSubject}/>
+                    <CardViewSubject 
+                        setShowModalViewSubject={setShowModalViewSubject}
+                    />
                 )
             }
 
             {
-                showModalCreate && (
-                    <CreateSubject setShowModalCreate={setShowModalCreate} setSubjects={setSubjects}/>
+                (showModalCreate || showModalEditSubject) && (
+                    <CreateSubject 
+                    setSubjects={setSubjects}
+                    setShowModalCreate={setShowModalCreate} 
+                    setShowModalEditSubject={setShowModalEditSubject}
+                    />
                 )
             }
 

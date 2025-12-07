@@ -8,11 +8,11 @@ import { SiGoogleclassroom } from 'react-icons/si';
 import { LiaChalkboardTeacherSolid } from 'react-icons/lia';
 
 import React from 'react';
-import { useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import toast, { Toaster } from 'react-hot-toast';
-import { subjectsAtom } from '../_store/subjectStore';
 import { IoMdCloseCircleOutline } from 'react-icons/io';
 import { fetchApi } from '@/app/_shared/utils/fetchApi';
+import { subjectAtom, subjectsAtom } from '../_store/subjectStore';
 import { Field, FieldArray, Form, Formik, FormikHelpers } from 'formik';
 import { FormValues, Subject } from '@/app/_shared/interfaces/subjectInterfaces';
 
@@ -23,7 +23,7 @@ const createSchemaValidation = Yup.object().shape({
             day: Yup.string().required('El día es requerido'),
             startTime: Yup.string().required('Hora requerida'),
             endTime: Yup.string().required('Hora fin requerida'),
-            classroom: Yup.string()
+            classroom: Yup.string().required('El aula es requerida')
         })
     ).min(1, 'Debe ingresar al menos 1 horario'),
     nameTeacher: Yup.string().required('El profesor es requerido'),
@@ -32,11 +32,22 @@ const createSchemaValidation = Yup.object().shape({
 
 const dayOptions = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'];
 
-export const CreateSubject = ({ setShowModalCreate, setSubjects }: { setShowModalCreate: (value: boolean) => void, setSubjects: React.Dispatch<React.SetStateAction<Subject[]>> }) => {
+export const CreateSubject = ({ 
+    setSubjects ,
+    setShowModalCreate,
+    setShowModalEditSubject 
+}: { 
+    setShowModalCreate: (value: boolean) => void, 
+    setSubjects: React.Dispatch<React.SetStateAction<Subject[]>> 
+    setShowModalEditSubject: (value: boolean) => void, 
+}) => {
+    const setSubjectAtom = useSetAtom(subjectAtom);
     const setSubjectsAtom = useSetAtom(subjectsAtom);
+    const subjectAtomValue = useAtomValue(subjectAtom);
+
     const initialValues = {
-        name: "",
-        weekDays: [
+        name: subjectAtomValue && subjectAtomValue.name ? subjectAtomValue.name : "",
+        weekDays: subjectAtomValue && subjectAtomValue.weekDays && subjectAtomValue.weekDays.length > 0 ? subjectAtomValue.weekDays : [
             {
                 day: "",
                 startTime: "",
@@ -44,34 +55,62 @@ export const CreateSubject = ({ setShowModalCreate, setSubjects }: { setShowModa
                 classroom: ""
             }
         ],
-        nameTeacher: "",
-        materials: []
+        nameTeacher: subjectAtomValue && subjectAtomValue.nameTeacher ? subjectAtomValue.nameTeacher : "",
+        materials: subjectAtomValue && subjectAtomValue.materials ? subjectAtomValue.materials : []
     };
+
+    console.log(subjectAtomValue, initialValues)
 
     const handleSubmit = async(values: FormValues, actions: FormikHelpers<FormValues>) => {
         try {
-            const responseAuth = await fetchApi<Subject>(`${process.env.NEXT_PUBLIC_API_URL}/subjects`, 'POST', values);
-            toast(responseAuth.message,
+            const METHOD = subjectAtomValue ? 'PUT' : 'POST';
+            const URL = subjectAtomValue ? `${process.env.NEXT_PUBLIC_API_URL}/subjects/${subjectAtomValue.id}` : `${process.env.NEXT_PUBLIC_API_URL}/subjects`;
+            const responseAuth = await fetchApi<Subject>(URL, METHOD, values);
+            console.log(responseAuth)
+            toast(responseAuth.message, 
                 {
                     icon: responseAuth.ok ? '✅' : '❌',
                     style: {
-                        borderRadius: '10px',
-                        background: '#279AF1',
-                        color: '#fff',
-                    },
-                    duration: 3000
-                }
-            );
+                    borderRadius: '10px',
+                    background: '#279AF1',
+                    color: '#fff',
+                },
+                duration: 3000,
+            });
+            
             if (responseAuth.ok && responseAuth.data) {
                 actions.resetForm();
-                setSubjects((prevSubjects) => [
-                    responseAuth.data as Subject,
-                    ...(prevSubjects ?? [])
-                ]);
-                setSubjectsAtom((prevSubjects) => [
-                    responseAuth.data as Subject,
-                    ...(prevSubjects ?? []),
-                ]);
+                if (METHOD === 'POST') {
+                    setSubjects((prevSubjects) => [
+                        responseAuth.data as Subject,
+                        ...(prevSubjects ?? [])
+                    ]);
+                    setSubjectsAtom((prevSubjects) => [
+                        responseAuth.data as Subject,
+                        ...(prevSubjects ?? []),
+                    ]);
+                } else {
+                    setSubjects((prevSubjects) => {
+                        return prevSubjects.map(item => {
+                            if (item.id === subjectAtomValue?.id) {
+                                return responseAuth.data as Subject;
+                            };
+                            return item;
+                        });
+                    });
+                    setSubjectsAtom((prevSubjects) => {
+                        if (prevSubjects) {
+                            return prevSubjects.map(item => {
+                                if (item.id === subjectAtomValue?.id) {
+                                    return responseAuth.data as Subject;
+                                };
+                                return item;
+                            });
+                        }
+                    });
+                    setSubjectAtom(responseAuth.data);
+                    // setShowModalEditSubject(false);
+                }
             }
         } catch (error) {
             toast('Ocurrió un error al ejecutar la petición',
@@ -98,8 +137,9 @@ export const CreateSubject = ({ setShowModalCreate, setSubjects }: { setShowModa
                     reverseOrder={false}
                 />
                 <Formik
-                    initialValues={initialValues}
                     onSubmit={handleSubmit}
+                    enableReinitialize={true}
+                    initialValues={initialValues}
                     validationSchema={createSchemaValidation}
                 >
                     {({values, resetForm}) => (
@@ -110,6 +150,8 @@ export const CreateSubject = ({ setShowModalCreate, setSubjects }: { setShowModa
                                 onClick={() => {
                                     resetForm();
                                     setShowModalCreate(false);
+                                    setSubjectAtom({} as Subject);
+                                    setShowModalEditSubject(false);
                                 }}
                             />
                             <div className='w-full flex'>
@@ -290,15 +332,34 @@ export const CreateSubject = ({ setShowModalCreate, setSubjects }: { setShowModa
                                                             <label htmlFor="" className="text-xs font-semibold px-1">Aula</label>
                                                             <div className="flex flex-col">
                                                                 <div className='flex'>
-                                                                    <div className="w-10 z-10 pl-1 text-center pointer-events-none flex items-center justify-center">
-                                                                        <SiGoogleclassroom className="mdi mdi-email-outline text-gray-400 text-lg"/>
-                                                                    </div>
-                                                                    <Field 
-                                                                        type="text" 
-                                                                        name={`weekDays.${index}.classroom`}
-                                                                        placeholder="A1, A2..." 
-                                                                        className="w-full -ml-10 pl-10 pr-3 py-2 rounded-lg border border-gray-400 outline-none focus:border-accent-dark transition ease-in duration-300"
-                                                                    />
+                                                                    <Field name={`weekDays.${index}.classroom`}>
+                                                                        {
+                                                                            ({
+                                                                                field,
+                                                                                form: {touched, errors},
+                                                                                meta
+                                                                            }) => (
+                                                                                <div className='w-full'>
+                                                                                    <div className='flex'>
+                                                                                        <div className="w-10 z-10 pl-1 text-center pointer-events-none flex items-center justify-center">
+                                                                                            <SiGoogleclassroom className="mdi mdi-email-outline text-gray-400 text-lg"/>
+                                                                                        </div>
+                                                                                        <input 
+                                                                                            type="text" 
+                                                                                            placeholder="A1, A2, B3..." 
+                                                                                            className={`w-full -ml-10 pl-10 pr-3 py-2 rounded-lg border border-gray-400 outline-none ${meta.touched && meta.error ? 'border-primary-dark' : ''} focus:border-accent-dark transition ease-in duration-300`}
+                                                                                            {...field}
+                                                                                        />
+                                                                                    </div>
+                                                                                    {meta.touched && meta.error && (
+                                                                                        <span className="mt-2 text-xs font-semibold text-primary-dark">
+                                                                                            {meta.error}
+                                                                                        </span>
+                                                                                    )}
+                                                                                </div>
+                                                                            )
+                                                                        }
+                                                                    </Field>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -402,7 +463,10 @@ export const CreateSubject = ({ setShowModalCreate, setSubjects }: { setShowModa
                                     type='submit' 
                                     className='border border-accent rounded-lg px-3 py-2 text-light bg-accent cursor-pointer hover:bg-light hover:text-accent-dark transition ease-in duration-300'
                                 >
-                                    Registrar
+                                    {
+                                        subjectAtomValue ? 
+                                        'Editar' : 'Registrar'
+                                    }
                                 </button>
 
                                 <button

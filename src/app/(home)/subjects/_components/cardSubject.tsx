@@ -9,7 +9,16 @@ import { subjectAtom } from "../_store/subjectStore";
 import { Subject } from "@/app/_shared/interfaces/subjectInterfaces";
 
 export const CardSubject = (
-    { subject, setShowModalViewSubject }: { subject: Subject, setShowModalViewSubject: (value: boolean) => void }
+    { 
+        subject, 
+        setShowModalViewSubject,
+        setShowModalEditSubject 
+    }: 
+    { 
+        subject: Subject, 
+        setShowModalViewSubject: (value: boolean) => void,
+        setShowModalEditSubject: (value: boolean) => void 
+    }
 ) => {
     const setSubjectAtom = useSetAtom(subjectAtom);
 
@@ -46,11 +55,23 @@ export const CardSubject = (
             }
 
             <div className="absolute bottom-5 flex flex-col gap-2 right-1">
-                <PiEye size={21} className="text-accent-dark cursor-pointer" onClick={() => {
-                    setShowModalViewSubject(true);
-                    setSubjectAtom(subject);
-                }}/>
-                <FaRegEdit size={21} className="text-accent-dark cursor-pointer"/>
+                <PiEye 
+                    size={21} 
+                    className="text-accent-dark cursor-pointer" 
+                    onClick={() => {
+                        setSubjectAtom(subject);
+                        setShowModalViewSubject(true);
+                    }}
+                />
+                <FaRegEdit 
+                    size={21} 
+                    className="text-accent-dark cursor-pointer"
+                    onClick={() => {
+                        setSubjectAtom(subject);
+                        console.log(subject)
+                        setShowModalEditSubject(true);
+                    }}
+                />
                 <MdDelete size={21} className="text-primary-dark cursor-pointer"/>
             </div>
         </div>
