@@ -1,7 +1,7 @@
-import { Subject } from "./subjectInterfaces";
 
-export interface Schedule {
-    id?: string;
-    user: string;
-    subjects: Subject
+export interface Events {
+    title:       string;
+    description: string;
+    start:       Date;
+    end:         Date;
 }

@@ -26,7 +26,7 @@ const optionsNavigations: ItemsNavigation[] = [
         // ]
     },
     {
-        id: 'calendar',
+        id: 'schedule',
         icon: <FaRegCalendarCheck size={23}/>,
         label: 'Calendario'
     }
@@ -36,7 +36,8 @@ export default function Sidebar() {
     const pathname = usePathname();
     const [isExpand, setIsExpand] = useState(true);
     const [subItemIsExpand, setSubItemIsExpand] = useState<Record<string, boolean>>({});
-    const userName = localStorage.getItem('username') || '';
+    // const userName = localStorage.getItem('username') || '';
+    const userName = 'Hola';
 
     const toggleSubMenu = (id: string) => setSubItemIsExpand(prev => ({
         ...prev,
